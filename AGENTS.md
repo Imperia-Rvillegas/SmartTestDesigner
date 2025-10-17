@@ -1,4 +1,12 @@
-# Repository Guidelines
+## Architectural Requirements
+- Avoid `out` parameters and optional parameters.
+
+## Frontend Requirements
+- Ensure every screen includes the following scripts:
+  ```html
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/%40tailwindplus/elements@1" type="module"></script>
+  ```
 
 ## Architectural Requirements
 - Use Clean Architecture principles.
