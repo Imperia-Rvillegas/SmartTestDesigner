@@ -71,18 +71,18 @@
                             Crear escenario desde pasos
                             <span class="text-xs text-indigo-300">Wizard</span>
                         </a>
-                        <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Importar pasos (CSV/Markdown)</a>
-                        <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Generar Gherkin con IA</a>
+                        <a asp-controller="Workspace" asp-action="New" asp-fragment="importar-pasos" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Importar pasos (CSV/Markdown)</a>
+                        <a asp-controller="Workspace" asp-action="New" asp-fragment="generar-gherkin-ia" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Generar Gherkin con IA</a>
                     </div>
                 </div>
                 <div class="space-y-1">
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Escenarios</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Grabador</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Localizadores</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Proyectos</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Ejecuciones</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Integraciones</a>
-                    <a href="#" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Ajustes</a>
+                    <a asp-controller="Workspace" asp-action="Scenarios" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Escenarios</a>
+                    <a asp-controller="Workspace" asp-action="Recorder" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Grabador</a>
+                    <a asp-controller="Workspace" asp-action="Locators" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Localizadores</a>
+                    <a asp-controller="Workspace" asp-action="Projects" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Proyectos</a>
+                    <a asp-controller="Workspace" asp-action="Executions" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Ejecuciones</a>
+                    <a asp-controller="Workspace" asp-action="Integrations" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Integraciones</a>
+                    <a asp-controller="Workspace" asp-action="Settings" class="block rounded-lg px-3 py-2 text-gray-300 hover:bg-white/5 hover:text-white">Ajustes</a>
                 </div>
             </nav>
         </aside>
