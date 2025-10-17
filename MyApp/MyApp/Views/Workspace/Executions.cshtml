@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "Ejecuciones";
+}
+
+<div class="space-y-10">
+    <section class="rounded-3xl border border-white/10 bg-gray-900/60 p-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="space-y-2">
+                <h1 class="text-3xl font-semibold text-white">Ejecuciones y reportes</h1>
+                <p class="text-sm text-gray-400">Monitorea suites smoke, regression o personalizadas. Consulta reportes Cucumber, logs y artefactos multimedia.</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-sm">
+                <button class="rounded-full bg-indigo-500 px-4 py-2 font-semibold text-white hover:bg-indigo-400">Ejecutar suite</button>
+                <button class="rounded-full border border-white/10 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">Reintentar fallidas</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+        <article class="space-y-4 rounded-2xl border border-white/10 bg-gray-900/60 p-6 text-sm text-gray-300">
+            <header class="flex flex-wrap items-center gap-3">
+                <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/70 px-3 py-2">
+                    Suite
+                    <select class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                        <option>Smoke</option>
+                        <option>Regression</option>
+                        <option>Custom</option>
+                    </select>
+                </label>
+                <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/70 px-3 py-2">
+                    Entorno
+                    <select class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                        <option>QA</option>
+                        <option>Stage</option>
+                        <option>Prod</option>
+                    </select>
+                </label>
+                <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/70 px-3 py-2">
+                    Parámetros
+                    <input type="text" placeholder="--tags @@smoke --headless" class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 text-sm text-gray-100 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+                </label>
+            </header>
+            <div class="overflow-hidden rounded-2xl border border-white/5">
+                <table class="min-w-full divide-y divide-white/10 text-left text-sm">
+                    <thead class="bg-white/5 text-xs uppercase tracking-wide text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 font-semibold">Fecha</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Suite/Escenario</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Entorno</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Duración</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Estado</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-gray-200">
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3 text-xs text-gray-400">2025-05-26 09:20</td>
+                            <td class="px-4 py-3">
+                                <div class="font-semibold text-white">Smoke Login</div>
+                                <p class="text-xs text-gray-400">tags: @@smoke,@@stage</p>
+                            </td>
+                            <td class="px-4 py-3 text-xs">QA</td>
+                            <td class="px-4 py-3 text-xs text-gray-400">12m 04s</td>
+                            <td class="px-4 py-3 text-xs text-emerald-300">✅ Passed</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Ver reporte</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-emerald-400 hover:text-white">Artefactos</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3 text-xs text-gray-400">2025-05-25 22:10</td>
+                            <td class="px-4 py-3">
+                                <div class="font-semibold text-white">Regression Stage</div>
+                                <p class="text-xs text-gray-400">tags: @@regression,@@stage</p>
+                            </td>
+                            <td class="px-4 py-3 text-xs">Stage</td>
+                            <td class="px-4 py-3 text-xs text-gray-400">48m 33s</td>
+                            <td class="px-4 py-3 text-xs text-rose-300">❌ Failed</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Ver reporte</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-rose-400 hover:text-white">Crear issue</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="text-center text-sm text-gray-400">
+                            <td colspan="6" class="px-4 py-6">Lanza una suite para llenar este historial.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <aside class="space-y-4">
+            <section class="rounded-2xl border border-white/10 bg-gray-900/60 p-6 text-sm text-gray-300">
+                <h2 class="text-sm font-semibold text-white">Detalle de ejecución</h2>
+                <div class="mt-4 space-y-3 rounded-2xl border border-white/10 bg-gray-950/70 p-4 text-xs text-gray-200">
+                    <p class="text-indigo-300">Cucumber HTML embebido</p>
+                    <div class="rounded-lg border border-white/5 bg-black/40 p-3">
+                        <p class="text-[11px] text-gray-400">Scenario Outline: Autenticación invalida</p>
+                        <p class="text-[11px] text-emerald-300">✓ Step: Given que el usuario ingresa credenciales válidas</p>
+                        <p class="text-[11px] text-rose-300">✗ Step: Then visualiza alerta de bloqueo (Timeout)</p>
+                    </div>
+                    <button class="w-full rounded-full border border-white/10 px-3 py-1 hover:border-indigo-400 hover:text-white">Abrir reporte completo</button>
+                </div>
+            </section>
+            <section class="rounded-2xl border border-white/10 bg-gray-900/60 p-6 text-sm text-gray-300">
+                <h2 class="text-sm font-semibold text-white">Logs y evidencias</h2>
+                <ul class="mt-3 space-y-2 text-xs text-gray-400">
+                    <li>console.log · 120 KB</li>
+                    <li>video.mp4 · 15 MB</li>
+                    <li>screenshot_step3.png · 540 KB</li>
+                </ul>
+                <button class="mt-4 w-full rounded-full border border-white/10 px-3 py-2 text-sm hover:border-indigo-400 hover:text-white">Descargar todo</button>
+            </section>
+            <section class="rounded-2xl border border-white/10 bg-gray-900/60 p-6 text-sm text-gray-300">
+                <h2 class="text-sm font-semibold text-white">Notificaciones</h2>
+                <ul class="mt-3 space-y-2 text-xs text-gray-400">
+                    <li>Ejecutión terminada Smoke Login · push/email</li>
+                    <li>Build fallida Regression Stage · Slack</li>
+                    <li>Token expira en 3 días · correo</li>
+                </ul>
+            </section>
+        </aside>
+    </section>
+</div>
