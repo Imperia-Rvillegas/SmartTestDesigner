@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Escenarios";
+}
+
+<div class="space-y-10">
+    <section class="rounded-3xl border border-white/10 bg-gray-900/60 p-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="space-y-3">
+                <h1 class="text-3xl font-semibold text-white">Escenarios</h1>
+                <p class="text-sm text-gray-400">Gestiona borradores, escenarios listos y los que requieren mantenimiento. Filtra por tags, owner o estado.</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-sm">
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">tag:smoke</button>
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">estado:listo</button>
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">owner:tqa</button>
+                <a asp-controller="Workspace" asp-action="New" class="rounded-full bg-indigo-500 px-4 py-2 font-semibold text-white hover:bg-indigo-400">➕ Nuevo</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section class="space-y-4">
+            <div class="rounded-2xl border border-white/10 bg-gray-900/60 p-4">
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-300">
+                    <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/60 px-3 py-2">
+                        Estado
+                        <select class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                            <option>Todos</option>
+                            <option>Borrador</option>
+                            <option>Listo</option>
+                            <option>Rotos</option>
+                        </select>
+                    </label>
+                    <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/60 px-3 py-2">
+                        Owner
+                        <select class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                            <option>Todos</option>
+                            <option>rlopez</option>
+                            <option>rvillegas</option>
+                            <option>tqa</option>
+                        </select>
+                    </label>
+                    <input type="search" placeholder="Buscar por nombre o tag" class="flex-1 min-w-[160px] rounded-lg border border-white/10 bg-gray-950/80 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+                </div>
+            </div>
+            <div class="overflow-hidden rounded-2xl border border-white/5">
+                <table class="min-w-full divide-y divide-white/10 text-left text-sm">
+                    <thead class="bg-white/5 text-xs uppercase tracking-wide text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 font-semibold">Escenario</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Etiquetas</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Owner</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Actualizado</th>
+                            <th scope="col" class="px-4 py-3 font-semibold">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5 text-gray-200">
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3">
+                                <div class="font-semibold text-white">@@smoke Validar login Imperia</div>
+                                <p class="text-xs text-gray-400">3 pasos definidos · 1 StepDef pendiente</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="mr-1 rounded-full bg-indigo-500/20 px-2 py-1 text-xs text-indigo-200">@@smoke</span>
+                                <span class="rounded-full bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200">@@qa</span>
+                            </td>
+                            <td class="px-4 py-3">rvillegas</td>
+                            <td class="px-4 py-3 text-xs text-gray-400">hace 2 horas</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <a asp-controller="Workspace" asp-action="Scenarios" class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Abrir</a>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Regenerar</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Validar</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-emerald-400 hover:text-white">Exportar</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-cyan-400 hover:text-white">Vincular loc.</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-white/5">
+                            <td class="px-4 py-3">
+                                <div class="font-semibold text-white">@@regression Gestión pedidos rechazo</div>
+                                <p class="text-xs text-gray-400">6 pasos definidos · listo para PR</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="mr-1 rounded-full bg-indigo-500/20 px-2 py-1 text-xs text-indigo-200">@@regression</span>
+                                <span class="rounded-full bg-amber-500/20 px-2 py-1 text-xs text-amber-200">@@stage</span>
+                            </td>
+                            <td class="px-4 py-3">lmartinez</td>
+                            <td class="px-4 py-3 text-xs text-gray-400">ayer</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-indigo-400 hover:text-white">Abrir</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-cyan-400 hover:text-white">Crear PR</button>
+                                    <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-rose-400 hover:text-white">Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="text-gray-400">
+                            <td colspan="5" class="px-4 py-6 text-center text-sm">
+                                Pega tus pasos y generamos el .feature en minutos.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="space-y-4">
+            <section class="rounded-2xl border border-white/10 bg-gray-900/60">
+                <header class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                    <nav class="flex gap-2 text-sm">
+                        <button class="rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white">Gherkin</button>
+                        <button class="rounded-lg px-3 py-1.5 text-gray-300 hover:bg-white/5 hover:text-white">Step Definitions</button>
+                        <button class="rounded-lg px-3 py-1.5 text-gray-300 hover:bg-white/5 hover:text-white">Notas</button>
+                    </nav>
+                    <div class="flex gap-2 text-xs text-gray-300">
+                        <button class="rounded-full border border-white/10 px-3 py-1 hover:border-indigo-400 hover:text-white">Validar</button>
+                        <button class="rounded-full border border-white/10 px-3 py-1 hover:border-emerald-400 hover:text-white">Guardar</button>
+                    </div>
+                </header>
+                <div class="space-y-4 p-4 text-sm text-gray-200">
+                    <div class="space-y-2 rounded-xl border border-white/10 bg-gray-950/70 p-4">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">Editor Gherkin</p>
+                        <pre class="overflow-x-auto text-xs leading-6 text-gray-200">@@smoke @@qa
+Feature: Login Imperia
+
+    Scenario: Acceso válido
+        Given que el usuario abre la pantalla de acceso
+        When ingresa credenciales correctas
+        Then visualiza el dashboard principal
+</pre>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="rounded-full border border-white/10 px-2 py-1">@@critical</span>
+                            <span class="rounded-full border border-white/10 px-2 py-1">@@stage</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <button class="rounded-full border border-white/10 px-3 py-1 hover:border-indigo-400 hover:text-white">Exportar .feature</button>
+                            <button class="rounded-full border border-white/10 px-3 py-1 hover:border-cyan-400 hover:text-white">Sincronizar StepDefs</button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 rounded-xl border border-white/10 bg-gray-950/70 p-4">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">Step Definitions pendientes</p>
+                        <ul class="space-y-2 text-xs">
+                            <li class="flex items-center justify-between rounded-lg border border-white/5 px-3 py-2">
+                                <span>Given que el usuario abre la pantalla</span>
+                                <button class="rounded border border-indigo-400/50 px-2 py-1 text-indigo-200 hover:bg-indigo-500/20 hover:text-white">Generar método</button>
+                            </li>
+                            <li class="flex items-center justify-between rounded-lg border border-white/5 px-3 py-2">
+                                <span>When ingresa credenciales correctas</span>
+                                <button class="rounded border border-indigo-400/50 px-2 py-1 text-indigo-200 hover:bg-indigo-500/20 hover:text-white">Generar método</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="space-y-2 rounded-xl border border-white/10 bg-gray-950/70 p-4">
+                        <p class="text-xs uppercase tracking-wide text-gray-500">Notas del escenario</p>
+                        <ul class="space-y-2 text-xs text-gray-300">
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-flex size-3 rounded-full bg-emerald-400"></span>
+                                Datos QA disponibles en vault Imperia.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-flex size-3 rounded-full bg-amber-400"></span>
+                                Dependencia: servicio de autenticación v2.
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="mt-1 inline-flex size-3 rounded-full bg-rose-400"></span>
+                                Revisar localizador btnLogin (flaky).
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section class="rounded-2xl border border-dashed border-white/10 bg-gray-900/40 p-6 text-center text-sm text-gray-400">
+                Pega tus pasos y generamos el .feature listo.
+            </section>
+        </aside>
+    </div>
+</div>

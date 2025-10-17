@@ -1,0 +1,98 @@
+@{
+    ViewData["Title"] = "Localizadores";
+}
+
+<div class="space-y-10">
+    <section class="rounded-3xl border border-white/10 bg-gray-900/60 p-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="space-y-2">
+                <h1 class="text-3xl font-semibold text-white">Repositorio de localizadores</h1>
+                <p class="text-sm text-gray-400">Controla confiabilidad, duplicados y sugerencias automáticas. Todo queda versionado con historial.</p>
+            </div>
+            <div class="flex flex-wrap gap-3 text-sm">
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-emerald-400 hover:text-white">Marcar como estable</button>
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-amber-400 hover:text-white">Marcar frágil</button>
+                <button class="rounded-full border border-white/10 bg-gray-950/70 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">Refactor en lote</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="rounded-2xl border border-white/10 bg-gray-900/60 p-6">
+        <div class="flex flex-wrap items-center gap-3 text-sm text-gray-300">
+            <input type="search" placeholder="Buscar por nombre o page" class="flex-1 min-w-[160px] rounded-lg border border-white/10 bg-gray-950/80 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" />
+            <label class="flex items-center gap-2 rounded-lg border border-white/10 bg-gray-950/70 px-3 py-2">
+                Estado
+                <select class="rounded border border-white/10 bg-gray-950/80 px-2 py-1 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+                    <option>Todos</option>
+                    <option>Frágil</option>
+                    <option>Duplicado</option>
+                    <option>Obsoleto</option>
+                    <option>No usado</option>
+                </select>
+            </label>
+            <button class="rounded-full border border-white/10 px-4 py-2 text-gray-200 hover:border-indigo-400 hover:text-white">Limpiar filtros</button>
+            <button class="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-4 py-2 font-semibold text-emerald-200 hover:border-emerald-300 hover:bg-emerald-500/20 hover:text-white">Probar todos</button>
+        </div>
+        <div class="mt-6 overflow-hidden rounded-2xl border border-white/5">
+            <table class="min-w-full divide-y divide-white/10 text-left text-sm">
+                <thead class="bg-white/5 text-xs uppercase tracking-wide text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 font-semibold">Nombre</th>
+                        <th scope="col" class="px-4 py-3 font-semibold">Selector</th>
+                        <th scope="col" class="px-4 py-3 font-semibold">Page</th>
+                        <th scope="col" class="px-4 py-3 font-semibold">Confiabilidad</th>
+                        <th scope="col" class="px-4 py-3 font-semibold">Última validación</th>
+                        <th scope="col" class="px-4 py-3 font-semibold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-gray-200">
+                    <tr class="hover:bg-white/5">
+                        <td class="px-4 py-3 font-semibold text-white">btnLogin</td>
+                        <td class="px-4 py-3 text-xs">data-testid=login-btn</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">LoginPage</td>
+                        <td class="px-4 py-3 text-xs text-emerald-300">97%</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">Hace 1 hora</td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-2 text-xs">
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-emerald-400 hover:text-white">Probar</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-cyan-400 hover:text-white">Sugerir alternativa</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-rose-400 hover:text-white">Historial</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-white/5">
+                        <td class="px-4 py-3 font-semibold text-white">inputSearchProduct</td>
+                        <td class="px-4 py-3 text-xs">css: input[name='product']</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">OrdersPage</td>
+                        <td class="px-4 py-3 text-xs text-amber-300">72%</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">Hace 3 días</td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-2 text-xs">
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-emerald-400 hover:text-white">Probar</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-cyan-400 hover:text-white">Refactor</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-rose-400 hover:text-white">Historial</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-white/5">
+                        <td class="px-4 py-3 font-semibold text-white">lblError</td>
+                        <td class="px-4 py-3 text-xs">xpath: //div[@role='alert']</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">LoginPage</td>
+                        <td class="px-4 py-3 text-xs text-rose-300">55%</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">Hace 5 días</td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-2 text-xs">
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-emerald-400 hover:text-white">Probar</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-cyan-400 hover:text-white">Sugerir alternativa</button>
+                                <button class="rounded-lg border border-white/10 px-2 py-1 text-gray-200 hover:border-rose-400 hover:text-white">Historial</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="text-center text-sm text-gray-400">
+                        <td colspan="6" class="px-4 py-6">Se llenará al grabar o sincronizar POM.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
