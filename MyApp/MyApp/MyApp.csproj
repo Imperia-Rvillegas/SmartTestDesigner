@@ -1,24 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0-preview.6.24327.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0-preview.6.24327.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0-preview.6.24327.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0-preview.6.24327.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Azure.Core" Version="1.40.0" />
-    <PackageReference Include="Azure.Identity" Version="1.12.0" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-</Project>
+Valor positivo: 62.368
+11:43:35 [main] INFO  - Producto encontrado: 1000317
+11:43:35 [main] INFO  - Columna mes: Noviembre
+11:43:35 [main] INFO  - Contenido de la lista de detalles de las celdas:
+11:43:35 [main] INFO  - Fila: 31, Columna: 5, Valor: 514
+11:43:35 [main] INFO  - Fila: 32, Columna: 5, Valor: 515
+11:43:35 [main] INFO  - Fila: 33, Columna: 5, Valor: 486
+11:43:35 [main] INFO  - Fila: 34, Columna: 5, Valor: 62.368
