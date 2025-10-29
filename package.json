@@ -1,8 +1,0 @@
-{
-  "scripts": {
-    "sync:xray": "node scripts/sync-xray-scenarios.js"
-  },
-  "devDependencies": {
-    "cucumber-html-reporter": "^7.2.0"
-  }
-}
