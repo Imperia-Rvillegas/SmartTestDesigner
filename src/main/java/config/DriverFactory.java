@@ -84,6 +84,11 @@ public class DriverFactory {
                 case "edge":
                     WebDriverManager.edgedriver().setup();
                     EdgeOptions edgeOptions = new EdgeOptions();
+                    edgeOptions.setAcceptInsecureCerts(true);
+                    edgeOptions.addArguments(
+                            "--ignore-certificate-errors",
+                            "--allow-insecure-localhost"
+                    );
                     if (isHeadless) {
                         edgeOptions.addArguments(
                                 "--headless=new",
@@ -104,6 +109,11 @@ public class DriverFactory {
                 default:
                     WebDriverManager.chromedriver().setup();
                     ChromeOptions chromeOptions = new ChromeOptions();
+                    chromeOptions.setAcceptInsecureCerts(true);
+                    chromeOptions.addArguments(
+                            "--ignore-certificate-errors",
+                            "--allow-insecure-localhost"
+                    );
                     if (isHeadless) {
                         chromeOptions.addArguments(
                                 "--headless=new",
