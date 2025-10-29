@@ -152,9 +152,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>24</release>
-                    <source>24</source>
-                    <target>24</target>
+                    <release>21</release>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -178,8 +178,8 @@
          ========================== -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>24</maven.compiler.source>
-        <maven.compiler.target>24</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <surefire.parallel>none</surefire.parallel>
         <surefire.threadCount>1</surefire.threadCount>
         <surefire.perCoreThreadCount>false</surefire.perCoreThreadCount>
