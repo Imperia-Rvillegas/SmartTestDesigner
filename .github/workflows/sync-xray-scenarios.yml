@@ -1,0 +1,52 @@
+name: Sync Xray Scenarios
+
+on:
+  workflow_dispatch:
+    inputs:
+      feature-path:
+        description: Path that contains the .feature files to compare.
+        required: false
+        default: src/test/resources/features
+      dry-run:
+        description: Set to true to avoid pushing changes to Xray.
+        required: false
+        default: 'false'
+      environment:
+        description: Environment name used to group concurrent runs.
+        required: false
+        default: default
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.environment }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux]
+    env:
+      XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+      XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+      XRAY_PROJECT_KEY: ${{ vars.XRAY_PROJECT_KEY }}
+      XRAY_API_BASE_URL: ${{ vars.XRAY_API_BASE_URL }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Compare and sync scenarios
+        run: |
+          COMMAND=("node" "scripts/sync-xray-scenarios.js" "--feature-dir" "${{ github.event.inputs.feature-path }}")
+          if [[ "${{ github.event.inputs.dry-run }}" == 'true' ]]; then
+            COMMAND+=("--dry-run")
+          fi
+          "${COMMAND[@]}"

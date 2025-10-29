@@ -1,0 +1,175 @@
+name: Run Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      SUITE:
+        description: 'Nombre de la suite'
+        type: choice
+        default: UiTest
+        options:
+          - ApiTest
+          - ArticlesTest
+          - AssociatedDimensionsTest
+          - AssociatedUnitArticleFlowTest
+          - BusinessDimensionsTest
+          - ConfigurationTest
+          - ForecastingConceptsTest
+          - ForecastsTest
+          - InventoryLocationsTest
+          - ListOfMaterialsTest
+          - ProductionPlanTest
+          - PruebasTest
+          - PurchasePlanTest
+          - UiTest
+          - UnitTest
+          - ProjectionOfStockNeedsTest
+          - InventoryHealthTest
+          - SubstituteProductsTest
+          - ForecastedMaterialRequirementsTest
+          - TrackingChangesInTheSameCycleTest
+          - TrackingChangesBetweenCyclesTest
+          - CommercialBudgetTest
+          - SalesHistoryTest
+          - PendingOrdersTest
+          - ForecastAnalysisListTest
+          - PotentialDiscontinuedTest
+          - PotentialLaunchesTest
+          - InventoryTest
+          - MpsMrpReportTest
+          - SupplierMaterialListTest
+          - PurchaseAlertsTest
+          - ProcessConfigListTest
+          - ProductionAlertsTest
+          - ProductionTest
+          - ProductionSequencingTest
+          - SequencerTest
+      USER:
+        description: 'Usuario'
+        type: choice
+        default: rvillegas
+        options: [rvillegas, lnieves, test2]
+      BROWSER:
+        description: 'Navegador'
+        type: choice
+        default: edge
+        options: [edge, chrome]
+      ENVIRONMENT:
+        description: 'URL/entorno'
+        type: string
+        default: ''
+      KEYCLIENT:
+        description: 'KeyClient (opcional para restaurar BD)'
+        type: string
+        default: ''
+
+env:
+  #QA_DOCKER_IMAGE: rvillegasvalera/qa-java24-browsers:latest
+  EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+  EMAIL_ME: ${{ vars.EMAIL_ME }}
+  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+  XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+  XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+  CI_PIPELINE_NUMBER: ${{ github.run_number }}
+  CI_PIPELINE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+# Permisos mínimos + checks para poder publicar reportes si se añade un reporter en el futuro
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+# Evita solapes por misma suite/entorno/usuario y corta ejecuciones previas
+concurrency:
+  group: run-suite-${{ inputs.SUITE }}-${{ inputs.ENVIRONMENT }}-${{ inputs.USER }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  run-suite:
+    name: Ejecutando pruebas (${{ inputs.SUITE }})
+    runs-on: ubuntu-latest
+    #timeout-minutes: 60
+
+    # Ejecutar todo dentro de tu imagen
+    container:
+      image: rvillegasvalera/qa-java24-browsers:latest
+
+    env:
+      USER: ${{ inputs.USER }}
+      BROWSER: ${{ inputs.BROWSER }}
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      KEYCLIENT: ${{ inputs.KEYCLIENT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restaurar BD (opcional por KEYCLIENT)
+        if: ${{ inputs.KEYCLIENT != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p target/logs
+          LOG_RECOVER="target/logs/recoverdb-${GITHUB_RUN_ID}.log"
+          echo "Restaurando BD con KEYCLIENT='${KEYCLIENT}' (log: ${LOG_RECOVER})"
+          if ! mvn -q -DskipTests=false -Dtest=config.RecoverDbTest -DfailIfNoTests=false -Dkeyclient="${KEYCLIENT}" test >"${LOG_RECOVER}" 2>&1; then
+            echo "::error ::Falló la restauración de BD. Revisa ${LOG_RECOVER} en los artefactos."
+            exit 1
+          fi
+
+      - name: Ejecutando pruebas (${{ inputs.SUITE }})
+        run: |
+          set -euo pipefail
+
+          echo "Iniciando ejecución de la suite..."
+          mkdir -p target/logs
+
+          SUITE="${{ inputs.SUITE }}"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+
+          echo "Capturando salida en ${LOG_FILE}"
+
+          STATUS=0
+          # IMPORTANTE: scripts/run-suite.sh debe gestionar Maven internamente.
+          # Aquí se redirige todo para mantener la UI limpia.
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || STATUS=$?
+
+          if [ "${STATUS}" -ne 0 ]; then
+            echo "::error::La ejecución terminó con errores. Revisa ${LOG_FILE} en los artefactos."
+            exit "${STATUS}"
+          fi
+
+          echo "Ejecución finalizada. Consulta ${LOG_FILE} en los artefactos para el detalle completo."
+
+      - name: Resumen de ejecución
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Resultados de la suite \`${{ inputs.SUITE }}\`"
+            echo ""
+            echo "- Usuario: \`${{ inputs.USER }}\`"
+            echo "- Navegador: \`${{ inputs.BROWSER }}\`"
+            echo "- Entorno: \`${{ inputs.ENVIRONMENT }}\`"
+            echo "- Log principal: \`target/logs/${{ inputs.SUITE }}-${GITHUB_RUN_ID}.log\` (ver artefactos)"
+            if [ -n "${{ inputs.KEYCLIENT }}" ]; then
+              echo "- Log restauración BD: \`target/logs/recoverdb-${GITHUB_RUN_ID}.log\` (ver artefactos)"
+            fi
+            echo ""
+            echo "> Los logs de ejecución no se muestran en la UI; revisa los artefactos adjuntos."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar artefactos
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-${{ inputs.SUITE }}
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+          if-no-files-found: ignore
+          retention-days: 14

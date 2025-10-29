@@ -1,0 +1,414 @@
+name: Run Regression Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      USER:
+        description: 'Usuario'
+        type: choice
+        default: rvillegas
+        options: [rvillegas, lnieves, test2]
+      BROWSER:
+        description: 'Navegador'
+        type: choice
+        default: edge
+        options: [edge, chrome]
+      ENVIRONMENT:
+        description: 'URL/entorno'
+        type: string
+        default: ''
+      KEYCLIENT:
+        description: 'KeyClient (opcional para restaurar BD)'
+        type: string
+        default: ''
+
+env:
+  EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+  EMAIL_ME: ${{ vars.EMAIL_ME }}
+  SMTP_PASS: ${{ secrets.SMTP_PASS }}
+  XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+  XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+  CI_PIPELINE_NUMBER: ${{ github.run_number }}
+  CI_PIPELINE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+concurrency:
+  group: run-regression-${{ inputs.USER }}-${{ inputs.ENVIRONMENT }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  restore-db:
+    name: Restaurar BD (opcional)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: rvillegasvalera/qa-java24-browsers:latest
+    env:
+      KEYCLIENT: ${{ inputs.KEYCLIENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restaurar BD si KEYCLIENT presente
+        if: ${{ inputs.KEYCLIENT != '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p target/logs
+          LOG_RECOVER="target/logs/recoverdb-${GITHUB_RUN_ID}.log"
+          echo "Restaurando BD con KEYCLIENT='${KEYCLIENT}' (log: ${LOG_RECOVER})"
+          if ! mvn -q -DskipTests=false -Dtest=config.RecoverDbTest -DfailIfNoTests=false -Dkeyclient="${KEYCLIENT}" test >"${LOG_RECOVER}" 2>&1; then
+            echo "::error ::Falló la restauración de BD. Revisa ${LOG_RECOVER} en los artefactos."
+            exit 1
+          fi
+      - name: Publicar artefactos (restore-db)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-restore-db
+          path: target/logs/recoverdb-*.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  calculation-tests:
+    name: CalculationTests (secuencial)
+    needs: restore-db
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container:
+      image: rvillegasvalera/qa-java24-browsers:latest
+    env:
+      USER: ${{ inputs.USER }}
+      BROWSER: ${{ inputs.BROWSER }}
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      KEYCLIENT: ${{ inputs.KEYCLIENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar agregador
+        run: |
+          set -euo pipefail
+          mkdir -p .suite-status
+
+      # ----- ConfigurationTest -----
+      - name: Ejecutar - ConfigurationTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="ConfigurationTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - ConfigurationTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-ConfigurationTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - ConfigurationTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "ConfigurationTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- ForecastsTest -----
+      - name: Ejecutar - ForecastsTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="ForecastsTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - ForecastsTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-ForecastsTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - ForecastsTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "ForecastsTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- PurchasePlanTest -----
+      - name: Ejecutar - PurchasePlanTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="PurchasePlanTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >="${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - PurchasePlanTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-PurchasePlanTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - PurchasePlanTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "PurchasePlanTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- ProductionPlanTest -----
+      - name: Ejecutar - ProductionPlanTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="ProductionPlanTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - ProductionPlanTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-ProductionPlanTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - ProductionPlanTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "ProductionPlanTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- InventoryHealthTest -----
+      - name: Ejecutar - InventoryHealthTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="InventoryHealthTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - InventoryHealthTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-InventoryHealthTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - InventoryHealthTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "InventoryHealthTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- ProjectionOfStockNeedsTest -----
+      - name: Ejecutar - ProjectionOfStockNeedsTest
+        run: |
+          set -euo pipefail
+          rm -rf target || true
+          mkdir -p target/logs
+          SUITE="ProjectionOfStockNeedsTest"
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+      - name: Artefactos - ProjectionOfStockNeedsTest
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-ProjectionOfStockNeedsTest
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Registrar estado - ProjectionOfStockNeedsTest
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "ProjectionOfStockNeedsTest,$TOTAL" >> .suite-status/summary.csv
+
+      # ----- Veredicto final del job secuencial -----
+      - name: Veredicto (CalculationTests)
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          touch .suite-status/summary.csv
+          echo "Resumen de fallos:"
+          cat .suite-status/summary.csv || true
+          # Falla si alguna suite tuvo fallos (TOTAL>0)
+          if awk -F, '{ if ($2+0 > 0) exit 1 } END { exit 0 }' .suite-status/summary.csv; then
+            echo "Todas las suites OK."
+          else
+            echo "::error::Hubo suites con fallos."
+            exit 1
+          fi
+
+  regression-parallel:
+    name: Suites en paralelo
+    needs: restore-db
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      image: rvillegasvalera/qa-java24-browsers:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        SUITE:
+          - ArticlesTest
+          - AssociatedDimensionsTest
+          - AssociatedUnitArticleFlowTest
+          - BusinessDimensionsTest
+          - ForecastingConceptsTest
+          - ListOfMaterialsTest
+          - UnitTest
+          - InventoryLocationsTest
+          - SubstituteProductsTest
+          - ForecastedMaterialRequirementsTest
+          - TrackingChangesInTheSameCycleTest
+          - TrackingChangesBetweenCyclesTest
+          - CommercialBudgetTest
+          - SalesHistoryTest
+          - PendingOrdersTest
+          - ForecastAnalysisListTest
+          - PotentialDiscontinuedTest
+          - PotentialLaunchesTest
+          - InventoryTest
+          - MpsMrpReportTest
+          - SupplierMaterialListTest
+          - PurchaseAlertsTest
+          - ProcessConfigListTest
+          - ProductionAlertsTest
+          - ProductionTest
+          - ProductionSequencingTest
+          - SequencerTest
+    env:
+      USER: ${{ inputs.USER }}
+      BROWSER: ${{ inputs.BROWSER }}
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      KEYCLIENT: ${{ inputs.KEYCLIENT }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ejecutar suite ${{ matrix.SUITE }}
+        run: |
+          set -euo pipefail
+          SUITE="${{ matrix.SUITE }}"
+          rm -rf target || true
+          mkdir -p target/logs
+          LOG_FILE="target/logs/${SUITE}-${GITHUB_RUN_ID}.log"
+          bash scripts/run-suite.sh "${SUITE}" >"${LOG_FILE}" 2>&1 || true
+
+      - name: Publicar artefactos ${{ matrix.SUITE }}
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-${{ matrix.SUITE }}
+          path: |
+            target/*.html
+            target/*.json
+            target/logs/*.log
+            target/screenshots/**
+            target/surefire-reports/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Veredicto por suite (falla tras publicar artefactos si hubo fallos)
+      - name: Veredicto (${{ matrix.SUITE }})
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          FAIL=0; ERR=0
+          shopt -s nullglob
+          for f in target/surefire-reports/*.xml; do
+            f1=$(grep -o 'failures="[0-9]\+"' "$f" | head -1 | tr -dc '0-9' || true); f1=${f1:-0}
+            e1=$(grep -o 'errors="[0-9]\+"' "$f"   | head -1 | tr -dc '0-9' || true); e1=${e1:-0}
+            FAIL=$((FAIL + f1)); ERR=$((ERR + e1))
+          done
+          TOTAL=$((FAIL + ERR))
+          echo "Fallos totales de ${{ matrix.SUITE }}: $TOTAL"
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "::error::${{ matrix.SUITE }} tiene fallos."
+            exit 1
+          fi

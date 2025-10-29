@@ -1,0 +1,8 @@
+# codex.yaml
+runtime:
+  image: rvillegasvalera/qa-java24-browsers-v2:latest
+  env:
+    JAVA_HOME: /usr/lib/jvm/temurin-24-jdk
+    CI: true
+  pre_run:
+    - echo "✅ Entorno cargado desde imagen personalizada (rvillegasvalera/qa-java24-browsers-v2:latest)"

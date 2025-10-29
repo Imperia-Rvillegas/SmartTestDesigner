@@ -1,0 +1,114 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Workflow: Maintenance - Actions storage cleanup
+#
+# ¿Qué hace?
+#   Permite liberar almacenamiento de GitHub Actions eliminando artefactos
+#   antiguos y, opcionalmente, los cachés asociados al repositorio.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Actions Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      daysToKeepArtifacts:
+        description: 'Eliminar artefactos con más de X días de antigüedad'
+        required: true
+        default: '30'
+        type: number
+      runner:
+        description: 'Runner donde ejecutar (self-hosted evita consumir presupuesto de Actions)'
+        type: choice
+        required: false
+        default: self-hosted
+        options:
+          - self-hosted
+          - ubuntu-latest
+      removeCaches:
+        description: 'Eliminar cachés de GitHub Actions'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  cleanup:
+    name: Depurar artefactos y cachés
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Eliminar artefactos antiguos
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const rawInput = `${{ inputs.daysToKeepArtifacts }}`;
+            const days = Number(rawInput);
+
+            if (!Number.isFinite(days) || days < 0) {
+              core.setFailed('El parámetro "daysToKeepArtifacts" debe ser un número mayor o igual que cero.');
+              return;
+            }
+
+            const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+            core.info(`Se eliminarán artefactos creados antes del ${new Date(cutoff).toISOString()}.`);
+
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+
+            for (const artifact of artifacts) {
+              if (artifact.expired) {
+                core.info(`Artefacto ${artifact.name} (${artifact.id}) ya expiró, se omite.`);
+                continue;
+              }
+
+              const createdAt = new Date(artifact.created_at).getTime();
+              if (!Number.isFinite(createdAt)) {
+                core.warning(`No fue posible interpretar la fecha de creación de ${artifact.name} (${artifact.id}).`);
+                continue;
+              }
+
+              if (createdAt >= cutoff) {
+                core.info(`Conservando ${artifact.name} (${artifact.id}) creado el ${artifact.created_at}.`);
+                continue;
+              }
+
+              core.info(`Eliminando artefacto ${artifact.name} (${artifact.id}) creado el ${artifact.created_at}.`);
+              await github.rest.actions.deleteArtifact({
+                owner,
+                repo,
+                artifact_id: artifact.id,
+              });
+            }
+
+      - name: Vaciar cachés de GitHub Actions
+        if: ${{ inputs.removeCaches }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const caches = await github.paginate(
+              github.rest.actions.listCachesForRepo,
+              { owner, repo, per_page: 100 },
+              (response) => response.data.actions_caches ?? []
+            );
+
+            for (const cache of caches) {
+              core.info(`Eliminando caché ${cache.key} (${cache.id}) de ${cache.size_in_bytes} bytes.`);
+              await github.rest.actions.deleteActionsCacheById({
+                owner,
+                repo,
+                cache_id: cache.id,
+              });
+            }

@@ -1,0 +1,108 @@
+# ------------------------------------------------------------------------------
+# Workflow: Build & Publish to Docker Hub
+#
+# ¿Qué hace?
+#   - Construye una imagen Docker desde el Dockerfile del repo
+#   - Publica la imagen en Docker Hub con dos tags:
+#       • latest         -> útil para consumir siempre la última build manual
+#       • sha-<commit>   -> tag inmutable basado en el SHA del commit
+#
+# ¿Cuándo corre?
+#   - Solo cuando se ejecuta manualmente desde la UI (Actions → Run workflow)
+#
+# Requisitos previos (en este repositorio de GitHub):
+#   1) Secrets de Actions:
+#        - DOCKERHUB_USERNAME  → tu usuario de Docker Hub (ej. "miusuario")
+#        - DOCKERHUB_TOKEN     → Access Token creado en Docker Hub
+#   2) Dockerfile en la ruta indicada por env.DOCKERFILE (por defecto ./Dockerfile)
+#
+# ¿Cómo lanzarlo?
+#   - Ir a: GitHub → Actions → "Build & Publish to Docker Hub" → Run workflow.
+#   - Elegir la rama (por defecto main) y ejecutar.
+#
+# ¿Cómo consumir la imagen resultante?
+#   docker pull <DOCKERHUB_USERNAME>/<IMAGE_NAME>:latest
+#   # o con el tag de commit:
+#   docker pull <DOCKERHUB_USERNAME>/<IMAGE_NAME>:sha-<commit>
+#
+# Personalización rápida:
+#   - Cambia env.IMAGE_NAME si quieres otro nombre de repositorio en Docker Hub
+#   - Cambia env.DOCKERFILE si tu Dockerfile no está en la raíz
+#   - Cambia "platforms" para multi-arquitectura (p. ej. "linux/amd64,linux/arm64")
+#
+# Notas:
+#   - Para arm64 + Google Chrome (solo amd64 en repo oficial), usa Chromium o
+#     instala Chrome condicionalmente por arquitectura en tu Dockerfile.
+# ------------------------------------------------------------------------------
+
+name: Build & Publish to Docker Hub
+
+on:
+  # Solo ejecución manual (sin inputs en el modal)
+  workflow_dispatch:
+
+permissions:
+  contents: read   # Permiso mínimo para leer el repo (checkout)
+
+env:
+  # ▶ Nombre del repositorio (imagen) en Docker Hub.
+  #   Cambia este valor para publicar en otro repo de Docker Hub.
+  IMAGE_NAME: qa-java24-browsers-v2
+
+  # ▶ Ruta al Dockerfile desde la raíz del repo.
+  DOCKERFILE: ./Dockerfile
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest   # Runner hospedado por GitHub
+
+    steps:
+      # 1) Descarga el código fuente del repo en el runner
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) (Opcional pero recomendado) Habilita emulación QEMU para multi-arch
+      #    Si solo construyes amd64, igual puede quedarse sin problema.
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      # 3) Configura Docker Buildx (builder moderno con cache y multi-arch)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 4) Login en Docker Hub usando Secrets (necesario para hacer push)
+      #    Crea los secrets en: Settings → Secrets and variables → Actions
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # tu usuario de Docker Hub
+          password: ${{ secrets.DOCKERHUB_TOKEN }}     # tu Access Token de Docker Hub
+
+      # 5) Genera metadatos (tags/labels) para la imagen
+      #    - type=sha          → crea un tag sha-<commit>
+      #    - type=raw,latest   → crea el tag latest
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      # 6) Construye y publica la imagen a Docker Hub
+      #    - platforms: por defecto amd64 (rápido y compatible)
+      #      * Para multi-arch: linux/amd64,linux/arm64 (si tu Dockerfile lo soporta)
+      #    - cache GHA: mejora tiempos en builds repetidas
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .                       # Directorio de build (raíz del repo)
+          file: ${{ env.DOCKERFILE }}      # Dockerfile a usar
+          platforms: linux/amd64           # Cambia a multi-arch si lo necesitas
+          push: true                       # Publica la imagen al finalizar
+          tags: ${{ steps.meta.outputs.tags }}       # Tags generados por metadata-action
+          labels: ${{ steps.meta.outputs.labels }}   # Labels OCI útiles (fuente, título, etc.)
+          cache-from: type=gha             # Usa cache de GitHub Actions
+          cache-to: type=gha,mode=max      # Sube cache para próximas ejecuciones

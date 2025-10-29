@@ -1,0 +1,7 @@
+primaryDimensionName: "Cliente"
+associatedDimensionName: "ProveedorTest"
+defaultValue: "Valor por defecto"
+defaultValueEdited: "Valor por defecto editado"
+editedAssociatedDimension: "Dimensión asociada editada"
+extraAssociatedDimension: "ProveedorExtra"
+extraDefaultValue: "Valor por defecto Extra"

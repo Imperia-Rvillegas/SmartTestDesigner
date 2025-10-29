@@ -1,0 +1,24 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Smoke" type="JUnit" factoryName="JUnit">
+    <module name="qa-automation-bot" />
+    <option name="PACKAGE_NAME" value="runners" />
+    <option name="MAIN_CLASS_NAME" value="runners.Smoke" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <envs>
+      <env name="BROWSER" value="chrome" />
+      <env name="CLIENTE" value="Interal" />
+      <env name="HEADLESS" value="true" />
+      <env name="KEYCLIENT" value="" />
+      <env name="SEND_EMAIL_REPORT" value="false" />
+      <env name="SEND_XRAY_REPORT" value="false" />
+      <env name="SPRINT" value="40-41" />
+      <env name="SUITE" value="substituteProducts" />
+      <env name="TEST_ENV" value="pekin.dev" />
+      <env name="TEST_USER" value="rvillegas" />
+    </envs>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
